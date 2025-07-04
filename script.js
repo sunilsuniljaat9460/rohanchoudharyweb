@@ -2,7 +2,7 @@
 // Rohan Choudhary Coaching Website – script.js
 // ==============================
 
-// 1. Mobile Navbar Toggle
+// ✅ 1. Mobile Navbar Toggle
 const hamburger = document.querySelector('.hamburger');
 const navMenu = document.querySelector('.nav-menu ul');
 
@@ -13,23 +13,27 @@ if (hamburger && navMenu) {
 
   document.querySelectorAll('.nav-menu a').forEach(link => {
     link.addEventListener('click', () => {
-      navMenu.classList.remove('active');
+      navMenu.classList.remove('active'); // Close menu on link click
     });
   });
 }
 
-// 2. Smooth Scroll
+// ✅ 2. Smooth Scrolling for In-Page Links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', e => {
-    e.preventDefault();
-    const target = document.querySelector(anchor.getAttribute('href'));
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const href = anchor.getAttribute('href');
+    if (href.length > 1 && document.querySelector(href)) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
     }
   });
 });
 
-// 3. Fade-in Animation on Scroll (using Intersection Observer)
+// ✅ 3. Fade-in Animation on Scroll (using Intersection Observer)
 const fadeEls = document.querySelectorAll('.fade-in');
 
 if ('IntersectionObserver' in window) {
@@ -40,40 +44,34 @@ if ('IntersectionObserver' in window) {
         observer.unobserve(entry.target);
       }
     });
-  }, {
-    threshold: 0.1
-  });
+  }, { threshold: 0.1 });
 
   fadeEls.forEach(el => observer.observe(el));
 }
 
-// 4. Back to Top Button
+// ✅ 4. Back to Top Button
 const backToTopBtn = document.querySelector('.back-to-top');
 
 if (backToTopBtn) {
   window.addEventListener('scroll', debounce(() => {
     backToTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
-  }));
+  }, 200)); // delay in ms
 
   backToTopBtn.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 }
 
-// 5. FAQ Accordion
-const faqItems = document.querySelectorAll('.faq-item');
-
-faqItems.forEach(item => {
-  const question = item.querySelector('.faq-question');
-  const answer = item.querySelector('.faq-answer');
-
-  question.setAttribute('tabindex', '0');
-
-  const toggleAnswer = () => {
-    const isOpen = answer.classList.contains('open');
-    document.querySelectorAll('.faq-answer').forEach(ans => ans.classList.remove('open'));
-    if (!isOpen) answer.classList.add('open');
+// ✅ Debounce Function (Missing earlier)
+function debounce(func, wait = 200) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
   };
+}
+
+
 
   question.addEventListener('click', toggleAnswer);
   question.addEventListener('keypress', e => {
@@ -84,7 +82,49 @@ faqItems.forEach(item => {
   });
 });
 
-// 6. Testimonial Auto Slider
+// ✅ 5. FAQ Accordion (Final Clean)
+document.addEventListener("DOMContentLoaded", () => {
+  const questions = document.querySelectorAll(".faq-question");
+
+  questions.forEach(question => {
+    const answer = question.nextElementSibling;
+    const icon = question.querySelector(".faq-icon");
+
+    question.setAttribute("tabindex", "0");
+
+    const toggleFAQ = () => {
+      const isOpen = answer.style.maxHeight && answer.style.maxHeight !== "0px";
+
+      // Close all others
+      document.querySelectorAll(".faq-answer").forEach(a => {
+        a.style.maxHeight = "0px";
+        a.style.padding = "0 1rem";
+      });
+      document.querySelectorAll(".faq-icon").forEach(i => {
+        i.style.transform = "rotate(0deg)";
+      });
+
+      // Open current
+      if (!isOpen) {
+        answer.style.maxHeight = "300px";
+        answer.style.padding = "1rem";
+        icon.style.transform = "rotate(45deg)";
+      }
+    };
+
+    question.addEventListener("click", toggleFAQ);
+    question.addEventListener("keypress", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleFAQ();
+      }
+    });
+  });
+});
+
+
+
+// ✅ 6. Testimonial Auto Slider
 const testimonials = document.querySelectorAll('.testimonial');
 const dotsContainer = document.querySelector('.slider-dots');
 let currentTestimonial = 0;
@@ -103,14 +143,14 @@ function updateDots(index) {
 }
 
 function nextTestimonial() {
-  if (!sliderPaused) {
+  if (!sliderPaused && testimonials.length > 0) {
     currentTestimonial = (currentTestimonial + 1) % testimonials.length;
     showTestimonial(currentTestimonial);
   }
 }
 
-// Initialize dots
-if (dotsContainer) {
+// Initialize dots (if container exists)
+if (dotsContainer && testimonials.length > 0) {
   testimonials.forEach((_, index) => {
     const dot = document.createElement('div');
     dot.classList.add('dot');
@@ -121,21 +161,20 @@ if (dotsContainer) {
     });
     dotsContainer.appendChild(dot);
   });
+
+  // Start auto-slide
+  showTestimonial(currentTestimonial);
+  setInterval(nextTestimonial, 3000);
+
+  // Pause on hover
+  testimonials.forEach(t => {
+    t.addEventListener('mouseenter', () => sliderPaused = true);
+    t.addEventListener('mouseleave', () => sliderPaused = false);
+  });
 }
 
-// Pause on hover
-testimonials.forEach(t => {
-  t.addEventListener('mouseenter', () => sliderPaused = true);
-  t.addEventListener('mouseleave', () => sliderPaused = false);
-});
 
-// Start auto-slide
-if (testimonials.length > 0) {
-  showTestimonial(currentTestimonial); // Show first review on load
-  setInterval(nextTestimonial, 3000); // Auto change every 3 sec
-}
-
-// 7. Dark Mode Toggle
+// ✅ 7. Dark Mode Toggle
 const toggleBtn = document.querySelector('#dark-toggle');
 const body = document.body;
 
@@ -149,7 +188,7 @@ const disableDarkMode = () => {
   localStorage.setItem('theme', 'light');
 };
 
-// On page load
+// On page load, check saved theme
 if (localStorage.getItem('theme') === 'dark') {
   enableDarkMode();
 }
@@ -160,38 +199,37 @@ if (toggleBtn) {
   });
 }
 
-// 8. Preloader Removal
+// ✅ 8. Preloader Removal on Page Load
 window.addEventListener('load', () => {
   const preloader = document.querySelector('#preloader');
   if (preloader) {
     preloader.classList.add('hidden');
+    setTimeout(() => preloader.remove(), 500); // Optional: remove from DOM
   }
 });
 
-// 9. ScrollSpy Navigation
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-menu a');
+// 9. ScrollSpy Navigation (Without debounce)
+const sections = document.querySelectorAll("section[id]");
+const navLinks = document.querySelectorAll(".nav-menu a");
 
-const highlightNav = debounce(() => {
-  const scrollPos = window.pageYOffset + 100;
+window.addEventListener("scroll", () => {
+  const scrollPos = window.scrollY + 100;
 
-  sections.forEach(sec => {
-    const top = sec.offsetTop;
-    const height = sec.offsetHeight;
-    const id = sec.getAttribute('id');
+  sections.forEach(section => {
+    const top = section.offsetTop;
+    const height = section.offsetHeight;
+    const id = section.getAttribute("id");
 
     if (scrollPos >= top && scrollPos < top + height) {
       navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${id}`) {
-          link.classList.add('active');
+        link.classList.remove("active");
+        if (link.getAttribute("href") === `#${id}`) {
+          link.classList.add("active");
         }
       });
     }
   });
-}, 100);
-
-window.addEventListener('scroll', highlightNav);
+});
 
 // 10. Gallery Zoom Modal
 const galleryImages = document.querySelectorAll('.gallery img');
@@ -229,10 +267,10 @@ if (galleryImages.length > 0) {
 }
 
 // 11. Contact Form Validation
-const form = document.querySelector('form');
+const form = document.querySelector("form");
 
 if (form) {
-  form.addEventListener('submit', e => {
+  form.addEventListener("submit", e => {
     const name = form.querySelector('[name="name"]');
     const email = form.querySelector('[name="email"]');
     const message = form.querySelector('[name="message"]');
@@ -241,12 +279,12 @@ if (form) {
     [name, email, message].forEach(field => {
       const error = field.nextElementSibling;
       if (!field.value.trim()) {
-        field.classList.add('error');
-        if (error) error.textContent = 'This field is required.';
+        field.classList.add("error");
+        if (error) error.textContent = "This field is required.";
         hasError = true;
       } else {
-        field.classList.remove('error');
-        if (error) error.textContent = '';
+        field.classList.remove("error");
+        if (error) error.textContent = "";
       }
     });
 
@@ -254,10 +292,10 @@ if (form) {
   });
 }
 
-// 12. About Section Scroll Animation + Word Highlight
+// 12. About Section Scroll Animation
 const animatedItems = document.querySelectorAll('.animate');
 
-const revealOnScroll = () => {
+function revealOnScroll() {
   const triggerBottom = window.innerHeight * 0.85;
 
   animatedItems.forEach(item => {
@@ -271,120 +309,7 @@ const revealOnScroll = () => {
       }
     }
   });
-};
-
+}
 window.addEventListener('scroll', revealOnScroll);
 window.addEventListener('load', revealOnScroll);
 
-// Word highlight on click
-function highlightWord(box) {
-  const span = box.querySelector('h3 span');
-  if (span) {
-    span.style.color = '#FFF44F';
-  }
-}
-
-const faqItems = document.querySelectorAll('.faq-item');
-
-faqItems.forEach(item => {
-  const question = item.querySelector('.faq-question');
-
-  // Accessibility: make it keyboard focusable
-  question.setAttribute('tabindex', '0');
-
-  const toggleAnswer = () => {
-    const isOpen = item.classList.contains('open');
-
-    // Close all open items
-    faqItems.forEach(i => i.classList.remove('open'));
-
-    // Toggle current
-    if (!isOpen) {
-      item.classList.add('open');
-    }
-  };
-
-  // Mouse click
-  question.addEventListener('click', toggleAnswer);
-
-  // Keyboard (Enter or Space)
-  question.addEventListener('keypress', e => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleAnswer();
-    }
-  });
-});
-
-
-const faqItems = document.querySelectorAll('.faq-item');
-
-faqItems.forEach(item => {
-  const question = item.querySelector('.faq-question');
-
-  // Accessibility: make it keyboard focusable
-  question.setAttribute('tabindex', '0');
-
-  const toggleAnswer = () => {
-    const isOpen = item.classList.contains('open');
-
-    // Close all open items
-    faqItems.forEach(i => i.classList.remove('open'));
-
-    // Toggle current
-    if (!isOpen) {
-      item.classList.add('open');
-    }
-  };
-
-  // Mouse click
-  question.addEventListener('click', toggleAnswer);
-
-  // Keyboard (Enter or Space)
-  question.addEventListener('keypress', e => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleAnswer();
-    }
-  });
-});
-
-// 13. FAQ Accordion (No Class Needed – Fully Functional)
-document.addEventListener("DOMContentLoaded", () => {
-  const questions = document.querySelectorAll(".faq-question");
-
-  questions.forEach(question => {
-    const answer = question.nextElementSibling;
-    const icon = question.querySelector(".faq-icon");
-
-    question.setAttribute("tabindex", "0"); // accessibility
-
-    const toggleFAQ = () => {
-      const isOpen = answer.style.maxHeight && answer.style.maxHeight !== "0px";
-
-      // Close all
-      document.querySelectorAll(".faq-answer").forEach(a => {
-        a.style.maxHeight = "0px";
-        a.style.padding = "0 1rem";
-      });
-      document.querySelectorAll(".faq-icon").forEach(i => {
-        i.style.transform = "rotate(0deg)";
-      });
-
-      // Open current
-      if (!isOpen) {
-        answer.style.maxHeight = "300px";
-        answer.style.padding = "1rem";
-        icon.style.transform = "rotate(45deg)";
-      }
-    };
-
-    question.addEventListener("click", toggleFAQ);
-    question.addEventListener("keypress", e => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggleFAQ();
-      }
-    });
-  });
-});
